@@ -12,19 +12,6 @@ import proPets.messaging.model.Post;
 @ManagedResource
 public class MessagingConfiguration {
 
-	Map<String, Post> users = new ConcurrentHashMap<>();
-
-	/*
-	 * public boolean addUser(String sessionId, Post userAccount) { return
-	 * users.put(sessionId, userAccount) == null; }
-	 * 
-	 * public Post getUser(String sessionId) { return users.get(sessionId); }
-	 * 
-	 * public String getUserLogin(String sessionId) { return
-	 * users.get(sessionId).getEmail(); }
-	 * 
-	 * public Post removeUser(String sessionId) { return users.remove(sessionId); }
-	 */
-
+	Map<String, Post> posts = new ConcurrentHashMap<>();
 
 }
