@@ -3,6 +3,7 @@ package proPets.messaging.controller;
 import java.security.Principal;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,6 +19,7 @@ import proPets.messaging.dto.PostDto;
 import proPets.messaging.dto.PostEditDto;
 import proPets.messaging.service.MessagingService;
 
+@CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/message/v1")
 public class MessagingServiceController {
@@ -67,10 +69,10 @@ public class MessagingServiceController {
 		return messagingService.getUserPostFeed(principal.getName());
 	}
 	
-	// for front: this request is working with "remove user" in Accounting service: it is cleaning the "tail of removed user"
+	// for front: this request is working with "remove user" in Accounting service: it is cleaning the "tail of removed user" AFTER removing the user from account db
 	@DeleteMapping("/post/cleaner")
-	public void cleanPostsAndPresenceOfRemovedUser(Principal principal) {
-		messagingService.cleanPostsAndPresenceOfRemovedUser(principal.getName());
+	public void cleanPostsAndPresenceOfRemovedUser(@RequestBody String removedUserId) {
+		messagingService.cleanPostsAndPresenceOfRemovedUser(removedUserId);
 	}
 
 }

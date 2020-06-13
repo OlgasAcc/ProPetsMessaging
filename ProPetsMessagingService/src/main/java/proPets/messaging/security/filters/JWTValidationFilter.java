@@ -29,7 +29,7 @@ import proPets.messaging.dao.MessagingRepository;
 import proPets.messaging.dto.AuthResponse;
 
 @Service
-@Order(10)
+@Order(20)
 
 public class JWTValidationFilter implements Filter {
 
@@ -46,8 +46,9 @@ public class JWTValidationFilter implements Filter {
 		HttpServletResponse response = (HttpServletResponse) resp;
 		String path = request.getServletPath();
 		String auth = request.getHeader("Authorization");
+		String method = request.getMethod();
 
-		if (path.startsWith("/message/v1/post")) {
+		if (!checkPointCut(path, method) && path.startsWith("/message/v1/post")) {
 			if (auth.startsWith("Bearer")) {
 				String newToken;
 				String email;
@@ -93,6 +94,11 @@ public class JWTValidationFilter implements Filter {
 		}
 	}
 
+	private boolean checkPointCut(String path, String method) {
+		boolean check = "/message/v1/post/cleaner".equalsIgnoreCase(path) && "DELETE".equalsIgnoreCase(method);
+		return check;
+	}
+
 	private ResponseEntity<AuthResponse> getHeadersWithNewToken(String auth) {
 		RestTemplate restTemplate = new RestTemplate();
 
@@ -101,7 +107,7 @@ public class JWTValidationFilter implements Filter {
 		headers.add("Content-Type", "application/json");
 
 		String url = "https://propets-accounting-service.herokuapp.com/security/v1/verify";
-		//String url = "http://localhost:8080/security/v1/verify";
+		// String url = "http://localhost:8080/security/v1/verify";
 		try {
 			RequestEntity<Object> request = new RequestEntity<>(headers, HttpMethod.POST, URI.create(url));
 			ResponseEntity<AuthResponse> newResponse = restTemplate.exchange(request, AuthResponse.class);
