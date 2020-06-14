@@ -18,7 +18,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
@@ -28,7 +28,7 @@ import proPets.messaging.configuration.MessagingConfiguration;
 import proPets.messaging.dao.MessagingRepository;
 import proPets.messaging.dto.AuthResponse;
 
-@Service
+@Component
 @Order(20)
 
 public class JWTValidationFilter implements Filter {
@@ -37,7 +37,7 @@ public class JWTValidationFilter implements Filter {
 	MessagingRepository accountRepository;
 
 	@Autowired
-	MessagingConfiguration accountConfiguration;
+	MessagingConfiguration messageConfiguration;
 
 	@Override
 	public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain)
@@ -100,7 +100,7 @@ public class JWTValidationFilter implements Filter {
 	}
 
 	private ResponseEntity<AuthResponse> getHeadersWithNewToken(String auth) {
-		RestTemplate restTemplate = new RestTemplate();
+		RestTemplate restTemplate = messageConfiguration.restTemplate();
 
 		MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
 		headers.add("Authorization", auth);
