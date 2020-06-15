@@ -25,16 +25,12 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import proPets.messaging.configuration.MessagingConfiguration;
-import proPets.messaging.dao.MessagingRepository;
 import proPets.messaging.dto.AuthResponse;
 
 @Component
 @Order(20)
 
 public class JWTValidationFilter implements Filter {
-
-	@Autowired
-	MessagingRepository accountRepository;
 
 	@Autowired
 	MessagingConfiguration messageConfiguration;

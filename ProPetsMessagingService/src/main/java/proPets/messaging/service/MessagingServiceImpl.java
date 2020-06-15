@@ -32,7 +32,7 @@ public class MessagingServiceImpl implements MessagingService {
 		if (postByCurrentUser != null) {
 			newPost.setUsersUnfollowedThisPostByAuthor(postByCurrentUser.getUsersUnfollowedThisPostByAuthor());
 		}
-		newPost = messagingRepository.save(newPost);
+		messagingRepository.save(newPost);
 		return convertPostToPostDto(newPost);
 	}
 	

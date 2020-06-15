@@ -34,7 +34,7 @@ public class Post {
 	@Setter
 	@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
 	LocalDateTime dateOfPublish;
-	@Setter
+
 	String authorId;
 	String authorAvatar;
 	String authorName;
