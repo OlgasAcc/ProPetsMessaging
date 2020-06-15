@@ -6,6 +6,9 @@ import lombok.Getter;
 
 @Getter
 public class NewPostDto {
+	
+	String authorAvatar;
+	String authorName;
 	String text;
 	Set<String> pictures;
 }

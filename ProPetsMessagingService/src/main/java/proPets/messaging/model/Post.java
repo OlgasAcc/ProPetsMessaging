@@ -36,14 +36,18 @@ public class Post {
 	LocalDateTime dateOfPublish;
 	@Setter
 	String authorId;
+	String authorAvatar;
+	String authorName;
 	Set<String> usersHidThisPost; // set of User's ids who made this post hidden from their feed
 	Set<String> usersAddedThisPostToFavorites;
 	@Setter
 	Set<String> usersUnfollowedThisPostByAuthor;
 
-	public Post(String text, String authorId, Set<String> pictures) {
+	public Post(String text, String authorId, String authorAvatar, String authorName, Set<String> pictures) {
 		this.text = text;
 		this.authorId = authorId;
+		this.authorAvatar = authorAvatar;
+		this.authorName = authorName;
 		dateOfPublish = LocalDateTime.now();
 		this.pictures = pictures;
 		usersHidThisPost = new HashSet<>();

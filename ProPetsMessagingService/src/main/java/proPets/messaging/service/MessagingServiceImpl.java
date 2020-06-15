@@ -23,11 +23,11 @@ public class MessagingServiceImpl implements MessagingService {
 	MessagingRepository messagingRepository;
 
 	@Autowired
-	MessagingConfiguration accountConfiguration;
+	MessagingConfiguration messagingConfiguration;
 
 	@Override
 	public PostDto addPost(String currentUserId, NewPostDto newPostDto) {
-		Post newPost = new Post(newPostDto.getText(), currentUserId, newPostDto.getPictures());
+		Post newPost = new Post(newPostDto.getText(), currentUserId, newPostDto.getAuthorAvatar(), newPostDto.getAuthorName(), newPostDto.getPictures());
 		Post postByCurrentUser = messagingRepository.findByAuthorId(currentUserId).findFirst().orElse(null);
 		if (postByCurrentUser != null) {
 			newPost.setUsersUnfollowedThisPostByAuthor(postByCurrentUser.getUsersUnfollowedThisPostByAuthor());
@@ -163,6 +163,7 @@ public class MessagingServiceImpl implements MessagingService {
 		Iterable<PostDto> list = messagingRepository.findAll()
 								.stream()
 								.filter(post->(!post.getUsersHidThisPost().contains(currentUserId))&&(!post.getUsersUnfollowedThisPostByAuthor().contains(currentUserId)))
+								.sorted((p1,p2)->p1.getDateOfPublish().compareTo(p2.getDateOfPublish()))
 								.map(post -> convertPostToPostDto(post))
 								.collect(Collectors.toList());
 		return list;

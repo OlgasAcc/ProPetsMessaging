@@ -14,10 +14,12 @@ import lombok.Setter;
 @Builder
 
 public class PostDto {
-	
+
 	String id;
 	String text;
 	Set<String> pictures;
 	LocalDateTime dateOfPublish;
 	String authorId;
+	String authorAvatar;
+	String authorName;
 }
