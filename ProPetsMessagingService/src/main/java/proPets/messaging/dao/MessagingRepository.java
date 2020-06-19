@@ -12,4 +12,5 @@ public interface MessagingRepository extends MongoRepository<Post, String> {
 	List<Post> findAll();
 	
 	Stream<Post>findByAuthorId(String authorId);
+	
 }

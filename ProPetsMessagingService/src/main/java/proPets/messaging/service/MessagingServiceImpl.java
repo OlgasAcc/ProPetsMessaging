@@ -1,12 +1,16 @@
 package proPets.messaging.service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.zip.DataFormatException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.support.PagedListHolder;
 import org.springframework.expression.AccessException;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.ModelAndView;
 
 import proPets.messaging.configuration.MessagingConfiguration;
 import proPets.messaging.dao.MessagingRepository;
@@ -26,23 +30,28 @@ public class MessagingServiceImpl implements MessagingService {
 	MessagingConfiguration messagingConfiguration;
 
 	@Override
-	public PostDto addPost(String currentUserId, NewPostDto newPostDto) {
+	public ModelAndView addPost(String currentUserId, NewPostDto newPostDto) throws Exception{
 		Post newPost = new Post(newPostDto.getText(), currentUserId, newPostDto.getAuthorAvatar(), newPostDto.getAuthorName(), newPostDto.getPictures());
 		Post postByCurrentUser = messagingRepository.findByAuthorId(currentUserId).findFirst().orElse(null);
 		if (postByCurrentUser != null) {
 			newPost.setUsersUnfollowedThisPostByAuthor(postByCurrentUser.getUsersUnfollowedThisPostByAuthor());
 		}
 		messagingRepository.save(newPost);
-		return convertPostToPostDto(newPost);
-	}
+		
+		int quantity = messagingConfiguration.getQuantity();
+		PagedListHolder<PostDto> pagedListHolder = createPageListHolder(currentUserId, 0, quantity);
+		return createModelAndViewObject(pagedListHolder, 0, quantity);
+	} 
 	
 	@Override
-	public PostDto removePost(String currentUserId, String postId) throws Throwable {
+	public ModelAndView removePost(String currentUserId, String postId) throws Throwable {
 		try {
 			Post post = messagingRepository.findById(postId).orElseThrow(() -> new PostNotFoundException());
 			if (currentUserId.equalsIgnoreCase(post.getAuthorId())) {
 				messagingRepository.delete(post);
-				return convertPostToPostDto(post);
+				int quantity = messagingConfiguration.getQuantity();
+				PagedListHolder<PostDto> pagedListHolder = createPageListHolder(currentUserId, 0, quantity);
+				return createModelAndViewObject(pagedListHolder, 0, quantity);
 			} else
 				throw new AccessException("Access denied: you'r not author!");
 		} catch (Exception e) {
@@ -57,11 +66,29 @@ public class MessagingServiceImpl implements MessagingService {
 				.dateOfPublish(post.getDateOfPublish())
 				.pictures(post.getPictures())
 				.text(post.getText())
+				.authorAvatar(post.getAuthorAvatar())
+				.authorName(post.getAuthorName())
 				.build();
+	}
+	
+	private PagedListHolder<PostDto> createPageListHolder(String currentUserId, int pageNumber, int quantity) {	
+		List<PostDto> list = getUpdatedFilteredPostFeed(currentUserId);
+		PagedListHolder<PostDto> pagedListHolder = new PagedListHolder<>(list);
+		pagedListHolder.setPage(pageNumber);
+		pagedListHolder.setPageSize(quantity);
+		return pagedListHolder;
+	}
+	
+	private ModelAndView createModelAndViewObject (PagedListHolder<PostDto> pagedListHolder, int page, int pageSize) {
+		ModelAndView mav = new ModelAndView("list of posts", HttpStatus.OK);
+		mav.addObject("pagedList", pagedListHolder.getPageList());
+		mav.addObject("page", 0);
+		mav.addObject("maxPage", pagedListHolder.getPageCount());
+		return mav;
 	}
 
 	@Override
-	public PostDto editPost(String currentUserId, PostEditDto postEditDto, String postId) throws Throwable {
+	public ModelAndView editPost(String currentUserId, PostEditDto postEditDto, String postId) throws Throwable {
 		try {
 			Post post = messagingRepository.findById(postId).orElseThrow(() -> new PostNotFoundException());
 			if (currentUserId.equalsIgnoreCase(post.getAuthorId())) {
@@ -73,7 +100,10 @@ public class MessagingServiceImpl implements MessagingService {
 				}
 				post.setDateOfPublish(LocalDateTime.now());
 				messagingRepository.save(post);
-				return convertPostToPostDto(post);
+				
+				int quantity = messagingConfiguration.getQuantity();
+				PagedListHolder<PostDto> pagedListHolder = createPageListHolder(currentUserId, 0, quantity);
+				return createModelAndViewObject(pagedListHolder, 0, quantity);
 			} else
 				throw new AccessException("Access denied: you'r not author!");
 		} catch (Exception e) {
@@ -92,27 +122,32 @@ public class MessagingServiceImpl implements MessagingService {
 				post.addUserThatAddedThisPostToFav(currentUserId);
 				messagingRepository.save(post);
 			}
-		} catch (PostNotFoundException e) {
-			e.printStackTrace();
+		} catch (Exception e) {
+			throw new Exception();
 		}
 	}
 	
+	//user stays on the same page number
 	@Override
-	public void makePostHidden(String currentUserId, String postId) throws Throwable {
+	public ModelAndView makePostHidden(String currentUserId, String postId, int page) throws Throwable {
 		try {
 			Post post = messagingRepository.findById(postId).orElseThrow(() -> new PostNotFoundException());
 			if (!currentUserId.equalsIgnoreCase(post.getAuthorId())) {
 				post.addUserThatHidThisPost(currentUserId);
 				messagingRepository.save(post);
+				int quantity = messagingConfiguration.getQuantity();
+				PagedListHolder<PostDto> pagedListHolder = createPageListHolder(currentUserId, page, quantity);
+				return createModelAndViewObject(pagedListHolder, page, quantity);
 			} else
 				throw new AccessException("Access denied: you'r not author!");
-		} catch (PostNotFoundException e) {
-			e.printStackTrace();
+		} catch (Exception e) {
+			throw new Exception();
 		}
 	}
 
+	//user goes to the first page of the feed
 	@Override
-	public void unfollowPostsByUser(String currentUserId, String postId) throws Throwable {
+	public ModelAndView unfollowPostsByUser(String currentUserId, String postId) throws Throwable {
 		try {
 			Post post = messagingRepository.findById(postId).orElseThrow(() -> new PostNotFoundException());
 			if (!currentUserId.equalsIgnoreCase(post.getAuthorId())) {
@@ -120,21 +155,31 @@ public class MessagingServiceImpl implements MessagingService {
 				messagingRepository.findByAuthorId(userIdToUnfollow)
 						.filter(item -> item.addUserThatUnfollowedThisPostByAuthor(currentUserId))
 						.forEach(i -> messagingRepository.save(i));
+				
+				int quantity = messagingConfiguration.getQuantity();
+				PagedListHolder<PostDto> pagedListHolder = createPageListHolder(currentUserId, 0, quantity);
+				return createModelAndViewObject(pagedListHolder, 0, quantity);
 			} else
 				throw new AccessException("Access denied: you'r not author!");
-		} catch (PostNotFoundException e) {
-			e.printStackTrace();
+		} catch (Exception e) {
+			throw new Exception();
 		}
 	}
-
+	
+   //need to save current page number in Store (front) for updating page or repeat the last request
 	@Override
-	public Iterable<PostDto> getAllFavoritePostsByUser(String userId) { //проверить, есть ли такой в базе аккаунтинга, или 0 в результате хватит?
-		Iterable<PostDto> favoritesByUser = messagingRepository.findAll()
+	public ModelAndView getAllFavoritePostsByUser(String userId, int page) { //проверить, есть ли такой в базе аккаунтинга, или 0 в результате хватит?
+		List<PostDto> favoritesByUser = messagingRepository.findAll()
 				.stream()
 				.filter(post -> post.getUsersAddedThisPostToFavorites().contains(userId))
 				.map(post -> convertPostToPostDto(post))
 				.collect(Collectors.toList());
-		return favoritesByUser;
+		
+		int quantity = messagingConfiguration.getQuantity();
+		PagedListHolder<PostDto> pagedListHolder = new PagedListHolder<PostDto>(favoritesByUser);
+		pagedListHolder.setPage(page);
+		pagedListHolder.setPageSize(quantity);
+		return createModelAndViewObject(pagedListHolder, 0, quantity);
 	}
 
 	@Override
@@ -158,14 +203,22 @@ public class MessagingServiceImpl implements MessagingService {
 						.forEach(i -> i.getUsersUnfollowedThisPostByAuthor().remove(removedUserId));
 	}
 
-	@Override
-	public Iterable<PostDto> getUserPostFeed(String currentUserId) {
-		Iterable<PostDto> list = messagingRepository.findAll()
-								.stream()
-								.filter(post->(!post.getUsersHidThisPost().contains(currentUserId))&&(!post.getUsersUnfollowedThisPostByAuthor().contains(currentUserId)))
-								.sorted((p1,p2)->p1.getDateOfPublish().compareTo(p2.getDateOfPublish()))
-								.map(post -> convertPostToPostDto(post))
-								.collect(Collectors.toList());
+	
+	private List<PostDto> getUpdatedFilteredPostFeed(String currentUserId){
+		List<PostDto> list = messagingRepository.findAll()
+				.stream()
+				.filter(post->(!post.getUsersHidThisPost().contains(currentUserId))&&(!post.getUsersUnfollowedThisPostByAuthor().contains(currentUserId)))
+				.sorted((p1,p2)->p1.getDateOfPublish().compareTo(p2.getDateOfPublish()))
+				.map(post -> convertPostToPostDto(post))
+				.collect(Collectors.toList());
 		return list;
+	}
+	
+	//need to save current page number in Store (front) for updating page or repeat the last request
+	@Override
+	public ModelAndView getUserPostFeed(String currentUserId, int page) {		
+		int quantity = messagingConfiguration.getQuantity();
+		PagedListHolder<PostDto> pagedListHolder = createPageListHolder(currentUserId, page, quantity);
+		return createModelAndViewObject(pagedListHolder, page, quantity);
 	}
 }
