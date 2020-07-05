@@ -179,7 +179,7 @@ public class MessagingServiceImpl implements MessagingService {
 		PagedListHolder<PostDto> pagedListHolder = new PagedListHolder<PostDto>(favoritesByUser);
 		pagedListHolder.setPage(page);
 		pagedListHolder.setPageSize(quantity);
-		return createModelAndViewObject(pagedListHolder, 0, quantity);
+		return createModelAndViewObject(pagedListHolder, page, quantity);
 	}
 
 	@Override
@@ -208,7 +208,7 @@ public class MessagingServiceImpl implements MessagingService {
 		List<PostDto> list = messagingRepository.findAll()
 				.stream()
 				.filter(post->(!post.getUsersHidThisPost().contains(currentUserId))&&(!post.getUsersUnfollowedThisPostByAuthor().contains(currentUserId)))
-				.sorted((p1,p2)->p1.getDateOfPublish().compareTo(p2.getDateOfPublish()))
+				.sorted((p1,p2)->p2.getDateOfPublish().compareTo(p1.getDateOfPublish()))
 				.map(post -> convertPostToPostDto(post))
 				.collect(Collectors.toList());
 		return list;

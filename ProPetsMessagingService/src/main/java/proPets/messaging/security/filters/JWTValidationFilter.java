@@ -52,7 +52,7 @@ public class JWTValidationFilter implements Filter {
 					ResponseEntity<AuthResponse> newResponse = getHeadersWithNewToken(auth);
 
 					newToken = newResponse.getHeaders().getFirst("X-token");
-					email = newResponse.getBody().getEmail();
+					email = newResponse.getBody().getEmail(); 
 
 					response.setHeader("X-token", newToken);
 					chain.doFilter(new WrapperRequest(request, email), response);
