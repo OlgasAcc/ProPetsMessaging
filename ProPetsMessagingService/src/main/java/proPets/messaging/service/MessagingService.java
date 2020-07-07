@@ -4,6 +4,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import proPets.messaging.dto.NewPostDto;
 import proPets.messaging.dto.PostEditDto;
+import proPets.messaging.dto.UserRemoveDto;
 
 public interface MessagingService {
 
@@ -23,6 +24,6 @@ public interface MessagingService {
 
 	ModelAndView getUserPostFeed(String currentUserId, int page);
 	
-	void cleanPostsAndPresenceOfRemovedUser(String removedUserId);
+	String cleanPostsAndPresenceOfRemovedUser(UserRemoveDto removedUserId);
 
 }

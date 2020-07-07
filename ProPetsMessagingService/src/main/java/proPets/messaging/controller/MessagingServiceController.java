@@ -4,6 +4,7 @@ import java.security.Principal;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import proPets.messaging.dto.NewPostDto;
 import proPets.messaging.dto.PostEditDto;
+import proPets.messaging.dto.UserRemoveDto;
 import proPets.messaging.service.MessagingService;
 
 @CrossOrigin(origins = "http://localhost:3000")
@@ -82,8 +84,8 @@ public class MessagingServiceController {
 	// account db
 	
 	@DeleteMapping("/post/cleaner")
-	public void cleanPostsAndPresenceOfRemovedUser(@RequestBody String removedUserId) {
-		messagingService.cleanPostsAndPresenceOfRemovedUser(removedUserId);
+	public ResponseEntity<String> cleanPostsAndPresenceOfRemovedUser(@RequestBody UserRemoveDto userRemoveDto) {
+		return ResponseEntity.ok(messagingService.cleanPostsAndPresenceOfRemovedUser(userRemoveDto));
 	}
 
 }

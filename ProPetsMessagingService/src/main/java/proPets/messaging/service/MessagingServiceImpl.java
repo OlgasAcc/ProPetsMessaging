@@ -17,6 +17,7 @@ import proPets.messaging.dao.MessagingRepository;
 import proPets.messaging.dto.NewPostDto;
 import proPets.messaging.dto.PostDto;
 import proPets.messaging.dto.PostEditDto;
+import proPets.messaging.dto.UserRemoveDto;
 import proPets.messaging.exceptions.PostNotFoundException;
 import proPets.messaging.model.Post;
 
@@ -183,24 +184,26 @@ public class MessagingServiceImpl implements MessagingService {
 	}
 
 	@Override
-	public void cleanPostsAndPresenceOfRemovedUser(String removedUserId) {
-		messagingRepository.findByAuthorId(removedUserId)
+	public String cleanPostsAndPresenceOfRemovedUser(UserRemoveDto userRemoveDto) {
+		String authorId = userRemoveDto.getUserId();
+		messagingRepository.findByAuthorId(authorId)
 						.forEach(i -> messagingRepository.delete(i));
 		
 		messagingRepository.findAll()
 						.stream()
-						.filter(post -> post.getUsersAddedThisPostToFavorites().contains(removedUserId))
-						.forEach(i -> i.getUsersAddedThisPostToFavorites().remove(removedUserId));
+						.filter(post -> post.getUsersAddedThisPostToFavorites().contains(authorId))
+						.forEach(i -> i.getUsersAddedThisPostToFavorites().remove(authorId));
 		
 		messagingRepository.findAll()
 						.stream()
-						.filter(post -> post.getUsersHidThisPost().contains(removedUserId))
-						.forEach(i -> i.getUsersHidThisPost().remove(removedUserId));
+						.filter(post -> post.getUsersHidThisPost().contains(authorId))
+						.forEach(i -> i.getUsersHidThisPost().remove(authorId));
 		
 		messagingRepository.findAll()
 						.stream()
-						.filter(post -> post.getUsersUnfollowedThisPostByAuthor().contains(removedUserId))
-						.forEach(i -> i.getUsersUnfollowedThisPostByAuthor().remove(removedUserId));
+						.filter(post -> post.getUsersUnfollowedThisPostByAuthor().contains(authorId))
+						.forEach(i -> i.getUsersUnfollowedThisPostByAuthor().remove(authorId));
+		return authorId;
 	}
 
 	
