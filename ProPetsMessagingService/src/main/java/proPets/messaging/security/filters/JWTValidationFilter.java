@@ -102,8 +102,8 @@ public class JWTValidationFilter implements Filter {
 		headers.add("Authorization", auth);
 		headers.add("Content-Type", "application/json");
 
-		String url = "https://propets-accounting-service.herokuapp.com/security/v1/verify";
-		// String url = "http://localhost:8080/security/v1/verify";
+		//String url = "https://propets-accounting-service.herokuapp.com/security/v1/verify";
+		String url = "http://localhost:8080/security/v1/verify";
 		try {
 			RequestEntity<Object> request = new RequestEntity<>(headers, HttpMethod.POST, URI.create(url));
 			ResponseEntity<AuthResponse> newResponse = restTemplate.exchange(request, AuthResponse.class);
