@@ -20,6 +20,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
+@Setter
 @EqualsAndHashCode(of = { "id" })
 @Builder
 @Document(collection = "all_posts")
@@ -27,27 +28,19 @@ import lombok.Setter;
 public class Post {
 	@Id
 	String id;
-	@Setter
 	String text;
-	@Setter
 	Set<String> pictures;
-	@Setter
 	@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
 	LocalDateTime dateOfPublish;
 
-	String authorId;
-	String authorAvatar;
-	String authorName;
+	AuthorData authorData;
 	Set<String> usersHidThisPost; // set of User's ids who made this post hidden from their feed
-	Set<String> usersAddedThisPostToFavorites;
-	@Setter
+	Set<AuthorData> usersAddedThisPostToFavorites; 
 	Set<String> usersUnfollowedThisPostByAuthor;
 
-	public Post(String text, String authorId, String authorAvatar, String authorName, Set<String> pictures) {
+	public Post(String text, Set<String> pictures) {
 		this.text = text;
-		this.authorId = authorId;
-		this.authorAvatar = authorAvatar;
-		this.authorName = authorName;
+		authorData = new AuthorData();
 		dateOfPublish = LocalDateTime.now();
 		this.pictures = pictures;
 		usersHidThisPost = new HashSet<>();
@@ -66,20 +59,31 @@ public class Post {
 		return pictures.remove(picture);
 	}
 
-	public boolean addUserThatHidThisPost(String userId) {
+	public boolean addToUsersThatHidThisPost(String userId) {
+		return usersHidThisPost.add(userId);
+	}
+	
+	public boolean addToUsersThatUnfollowedThisPostByAuthor(String userId) {
 		return usersHidThisPost.add(userId);
 	}
 
-	public boolean addUserThatAddedThisPostToFav(String userId) {
-		return usersAddedThisPostToFavorites.add(userId);
-	}
-
-	public boolean removeUserThatAddedThisPostToFav(String userId) {
-		return usersAddedThisPostToFavorites.remove(userId);
+	public boolean removeFromUserThatAddedThisPostToFav(String userId) {
+		for (AuthorData ad : usersAddedThisPostToFavorites) {
+			if (ad.getAuthorId().equalsIgnoreCase(userId)) {
+				usersAddedThisPostToFavorites.remove(ad);
+				return true;
+			}
+		}
+		return false;
 	}
 	
-	public boolean addUserThatUnfollowedThisPostByAuthor(String userId) {
-		return usersUnfollowedThisPostByAuthor.add(userId);
+	public boolean addToUserThatAddedThisPostToFav(String userId) {
+		AuthorData authorData = AuthorData.builder()
+				.authorId(userId)
+				.authorName("none")
+				.authorAvatar("none")
+				.build();
+		return usersAddedThisPostToFavorites.add(authorData);
 	}
 
 }

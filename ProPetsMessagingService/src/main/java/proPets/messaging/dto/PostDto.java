@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import proPets.messaging.model.AuthorData;
 
 @AllArgsConstructor
 @Getter
@@ -19,7 +20,5 @@ public class PostDto {
 	String text;
 	Set<String> pictures;
 	LocalDateTime dateOfPublish;
-	String authorId;
-	String authorAvatar;
-	String authorName;
+	AuthorData authorData;
 }

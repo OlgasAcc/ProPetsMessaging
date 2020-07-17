@@ -1,7 +1,7 @@
 package proPets.messaging.controller;
 
 import java.security.Principal;
-import java.util.Map;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import proPets.messaging.dto.NewPostDto;
+import proPets.messaging.dto.PostDto;
 import proPets.messaging.dto.PostEditDto;
 import proPets.messaging.dto.UserRemoveDto;
 import proPets.messaging.service.MessagingService;
@@ -31,21 +32,21 @@ public class MessagingServiceController {
 	MessagingService messagingService;
 
 	@PostMapping("/post")
-	public Map<String, Object> addPost(@RequestHeader(value = "Authorization") String authorization,
+	public List<PostDto> addPost(@RequestHeader(value = "Authorization") String authorization,
 			Principal principal, @RequestBody NewPostDto newPostDto) throws Exception {
-		return messagingService.addPost(principal.getName(), newPostDto).getModel();
+		return messagingService.addPost(principal.getName(), newPostDto);
 	}
 
 	@DeleteMapping("/post/{postId}")
-	public Map<String, Object> removePost(@RequestHeader(value = "Authorization") String authorization,
+	public List<PostDto> removePost(@RequestHeader(value = "Authorization") String authorization,
 			Principal principal, @PathVariable String postId) throws Throwable {
-		return messagingService.removePost(principal.getName(), postId).getModel();
+		return messagingService.removePost(principal.getName(), postId);
 	}
 
 	@PutMapping("/post/{postId}")
-	public Map<String, Object> editPost(@RequestHeader(value = "Authorization") String authorization,
+	public List<PostDto> editPost(@RequestHeader(value = "Authorization") String authorization,
 			Principal principal, @RequestBody PostEditDto postEditDto, @PathVariable String postId) throws Throwable {
-		return messagingService.editPost(principal.getName(), postEditDto, postId).getModel();
+		return messagingService.editPost(principal.getName(), postEditDto, postId);
 	}
 
 	@PostMapping("/post/favorites/{postId}")
@@ -55,29 +56,28 @@ public class MessagingServiceController {
 	}
 
 	@PostMapping("/post/hidden/{postId}")
-	public Map<String, Object> makePostHidden(@RequestHeader(value = "Authorization") String authorization,
+	public List<PostDto> makePostHidden(@RequestHeader(value = "Authorization") String authorization,
 			@PathVariable String postId, @RequestParam ("page") int page, Principal principal) throws Throwable {
-		return messagingService.makePostHidden(principal.getName(), postId, page).getModel();
+		return messagingService.makePostHidden(principal.getName(), postId, page);
 	}
 
 	@PostMapping("/post/unfollow/{postId}")
-	public Map<String, Object> unfollowPostsByUser(@RequestHeader(value = "Authorization") String authorization,
+	public List<PostDto> unfollowPostsByUser(@RequestHeader(value = "Authorization") String authorization,
 			@PathVariable String postId, Principal principal) throws Throwable {
-		return messagingService.unfollowPostsByUser(principal.getName(), postId).getModel();
+		return messagingService.unfollowPostsByUser(principal.getName(), postId);
 	}
 
-	@GetMapping("/post/favorites/{userId}")
-	public Map<String, Object> getAllFavoritePostsByUser(@RequestHeader(value = "Authorization") String authorization,
-			@PathVariable String userId, @RequestParam ("page") int page) {
-		return messagingService.getAllFavoritePostsByUser(userId, page).getModel();
+	@GetMapping("/post/favorites")
+	public List<PostDto> getAllFavoritePostsByUser(@RequestHeader(value = "Authorization") String authorization,
+			Principal principal, @RequestParam ("page") int page) {
+		return messagingService.getAllFavoritePostsByUser(principal.getName(), page);
 	}
 
 	@GetMapping("/post/feed")
-	public Map<String, Object> getUserPostFeed(@RequestHeader(value = "Authorization") String authorization, @RequestParam ("page") int page,
+	public List<PostDto> getUserPostFeed(@RequestHeader(value = "Authorization") String authorization, @RequestParam ("page") int page,
 			Principal principal) {
-		return messagingService.getUserPostFeed(principal.getName(), page).getModel();
+		return messagingService.getUserPostFeed(principal.getName(), page);
 	}
-
 	
 	// for front: this request is working with "remove user" in Accounting service:
 	// it is cleaning the "tail of removed user" AFTER removing the user from

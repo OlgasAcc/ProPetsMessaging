@@ -5,10 +5,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.support.PagedListHolder;
-import org.springframework.http.HttpStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Component;
-import org.springframework.web.servlet.ModelAndView;
 
 import proPets.messaging.configuration.MessagingConfiguration;
 import proPets.messaging.dao.MessagingRepository;
@@ -30,39 +31,55 @@ public class MessageUtil implements Serializable {
 	public PostDto convertPostToPostDto(Post post) {
 		return PostDto.builder()
 				.id(post.getId())
-				.authorId(post.getAuthorId())
+				.authorData(post.getAuthorData())
 				.dateOfPublish(post.getDateOfPublish())
 				.pictures(post.getPictures())
 				.text(post.getText())
-				.authorAvatar(post.getAuthorAvatar())
-				.authorName(post.getAuthorName())
 				.build();
 	}
 	
-	public PagedListHolder<PostDto> createPageListHolder(String currentUserId, int pageNumber, int quantity) {	
-		List<PostDto> list = getUpdatedFilteredPostFeed(currentUserId);
-		PagedListHolder<PostDto> pagedListHolder = new PagedListHolder<>(list);
-		pagedListHolder.setPage(pageNumber);
-		pagedListHolder.setPageSize(quantity);
-		return pagedListHolder;
-	}
-	
-	public ModelAndView createModelAndViewObject (PagedListHolder<PostDto> pagedListHolder, int page, int pageSize) {
-		ModelAndView mav = new ModelAndView("list of posts", HttpStatus.OK);
-		mav.addObject("pagedList", pagedListHolder.getPageList());
-		mav.addObject("page", 0);
-		mav.addObject("maxPage", pagedListHolder.getPageCount());
-		return mav;
-	}
-	
-	public List<PostDto> getUpdatedFilteredPostFeed(String currentUserId){
-		List<PostDto> list = messagingRepository.findAll()
-				.stream()
+	public List<PostDto> getListAndConvertToListOfPostDto (String currentUserId, PageRequest pageReq){
+		Page<Post> posts = messagingRepository.findAll(pageReq);
+		return posts.getContent().stream()
 				.filter(post->(!post.getUsersHidThisPost().contains(currentUserId))&&(!post.getUsersUnfollowedThisPostByAuthor().contains(currentUserId)))
-				.sorted((p1,p2)->p2.getDateOfPublish().compareTo(p1.getDateOfPublish()))
-				.map(post -> convertPostToPostDto(post))
+				//.sorted((p1,p2)->p2.getDateOfPublish().compareTo(p1.getDateOfPublish()))
+				.map(this::convertPostToPostDto)
 				.collect(Collectors.toList());
-		return list;
 	}
+	
+	public List<PostDto> getFavsListAndConvertToListOfPostDto (String currentUserId, PageRequest pageReq){
+		Query query = new Query();
+		query.addCriteria(Criteria.where(currentUserId).in("usersAddedThisPostToFavorites"));
+		Page<Post> posts = messagingRepository.findByUsersAddedThisPostToFavoritesAuthorId(currentUserId,pageReq);
+		return posts.getContent().stream()
+				.map(this::convertPostToPostDto)
+				.collect(Collectors.toList());
+	}
+	
+//	public PagedListHolder<PostDto> createPageListHolder(String currentUserId, int pageNumber, int quantity) {	
+//		List<PostDto> list = getUpdatedFilteredPostFeed(currentUserId);
+//		PagedListHolder<PostDto> pagedListHolder = new PagedListHolder<>(list);
+//		pagedListHolder.setPage(pageNumber);
+//		pagedListHolder.setPageSize(quantity);
+//		return pagedListHolder;
+//	}
+//	
+//	public ModelAndView createModelAndViewObject (PagedListHolder<PostDto> pagedListHolder, int page, int pageSize) {
+//		ModelAndView mav = new ModelAndView("list of posts", HttpStatus.OK);
+//		mav.addObject("pagedList", pagedListHolder.getPageList());
+//		mav.addObject("page", 0);
+//		mav.addObject("maxPage", pagedListHolder.getPageCount());
+//		return mav;
+//	}
+//	
+//	public List<PostDto> getUpdatedFilteredPostFeed(String currentUserId){
+//		List<PostDto> list = messagingRepository.findAll()
+//				.stream()
+//				.filter(post->(!post.getUsersHidThisPost().contains(currentUserId))&&(!post.getUsersUnfollowedThisPostByAuthor().contains(currentUserId)))
+//				.sorted((p1,p2)->p2.getDateOfPublish().compareTo(p1.getDateOfPublish()))
+//				 .map(this::convertPostToPostDto)
+//				.collect(Collectors.toList());
+//		return list;
+//	}
 
 }
