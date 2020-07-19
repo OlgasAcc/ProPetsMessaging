@@ -4,6 +4,7 @@ import java.security.Principal;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -17,6 +18,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import proPets.messaging.configuration.BeanConfiguration;
+import proPets.messaging.configuration.MessagingConfiguration;
 import proPets.messaging.dto.NewPostDto;
 import proPets.messaging.dto.PostDto;
 import proPets.messaging.dto.PostEditDto;
@@ -30,7 +33,16 @@ public class MessagingServiceController {
 
 	@Autowired
 	MessagingService messagingService;
+	
+	@Autowired
+	MessagingConfiguration messagingConfiguration;
 
+	@RefreshScope
+	@GetMapping("/config")
+	public  BeanConfiguration getRefreshedData() {
+		return new BeanConfiguration(messagingConfiguration.getQuantity());
+	}
+	
 	@PostMapping("/post")
 	public List<PostDto> addPost(@RequestHeader(value = "Authorization") String authorization,
 			Principal principal, @RequestBody NewPostDto newPostDto) throws Exception {
