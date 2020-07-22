@@ -29,5 +29,13 @@ public class MessagingConfiguration {
 	public int getQuantity() {
 		return quantity;
 	}
+	
+	@Value("${base.jwt.url}")
+	String baseJWTUrl;
+	
+	@RefreshScope
+	public String getBaseJWTUrl() {
+		return baseJWTUrl;
+	}
 
 }

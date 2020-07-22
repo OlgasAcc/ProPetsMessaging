@@ -40,7 +40,7 @@ public class MessagingServiceController {
 	@RefreshScope
 	@GetMapping("/config")
 	public  BeanConfiguration getRefreshedData() {
-		return new BeanConfiguration(messagingConfiguration.getQuantity());
+		return new BeanConfiguration(messagingConfiguration.getQuantity(),messagingConfiguration.getBaseJWTUrl());
 	}
 	
 	@PostMapping("/post")
