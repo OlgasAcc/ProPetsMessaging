@@ -46,6 +46,7 @@ public class MessagingServiceController {
 	@PostMapping("/post")
 	public List<PostDto> addPost(@RequestHeader(value = "Authorization") String authorization,
 			Principal principal, @RequestBody NewPostDto newPostDto) throws Exception {
+		System.out.println(principal);
 		return messagingService.addPost(principal.getName(), newPostDto);
 	}
 
