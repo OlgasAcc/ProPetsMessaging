@@ -1,7 +1,8 @@
 package proPets.messaging.controller;
 
-import java.security.Principal;
 import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
@@ -13,7 +14,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -29,6 +29,7 @@ import proPets.messaging.service.MessagingService;
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/message/v1")
+
 public class MessagingServiceController {
 
 	@Autowired
@@ -36,60 +37,63 @@ public class MessagingServiceController {
 	
 	@Autowired
 	MessagingConfiguration messagingConfiguration;
+	
+	@Autowired
+	private HttpServletRequest requestContext;
 
 	@RefreshScope
 	@GetMapping("/config")
 	public  BeanConfiguration getRefreshedData() {
-		return new BeanConfiguration(messagingConfiguration.getQuantity(),messagingConfiguration.getBaseJWTUrl());
+		return new BeanConfiguration(messagingConfiguration.getQuantity());
 	}
 	
 	@PostMapping("/post")
-	public List<PostDto> addPost(@RequestHeader(value = "Authorization") String authorization,
-			Principal principal, @RequestBody NewPostDto newPostDto) throws Exception {
-		System.out.println(principal);
-		return messagingService.addPost(principal.getName(), newPostDto);
+	public List<PostDto> addPost(@RequestBody NewPostDto newPostDto) throws Exception {
+		String authorId = requestContext.getHeader("authorId");
+		System.out.println(authorId);
+		return messagingService.addPost(authorId, newPostDto);
 	}
 
 	@DeleteMapping("/post/{postId}")
-	public List<PostDto> removePost(@RequestHeader(value = "Authorization") String authorization,
-			Principal principal, @PathVariable String postId) throws Throwable {
-		return messagingService.removePost(principal.getName(), postId);
+	public List<PostDto> removePost(@PathVariable String postId) throws Throwable {
+		String authorId = requestContext.getHeader("authorId");
+		return messagingService.removePost(authorId, postId);
 	}
 
 	@PutMapping("/post/{postId}")
-	public List<PostDto> editPost(@RequestHeader(value = "Authorization") String authorization,
-			Principal principal, @RequestBody PostEditDto postEditDto, @PathVariable String postId) throws Throwable {
-		return messagingService.editPost(principal.getName(), postEditDto, postId);
+	public List<PostDto> editPost(@RequestBody PostEditDto postEditDto, @PathVariable String postId) throws Throwable {
+		String authorId = requestContext.getHeader("authorId");
+		return messagingService.editPost(authorId, postEditDto, postId);
 	}
 
 	@PostMapping("/post/favorites/{postId}")
-	public void makePostFavorite(@RequestHeader(value = "Authorization") String authorization,
-			@PathVariable String postId, Principal principal) throws Throwable {
-		messagingService.makePostFavorite(principal.getName(), postId);
+	public void makePostFavorite(@PathVariable String postId) throws Throwable {
+		String authorId = requestContext.getHeader("authorId");
+		messagingService.makePostFavorite(authorId, postId);
 	}
 
 	@PostMapping("/post/hidden/{postId}")
-	public List<PostDto> makePostHidden(@RequestHeader(value = "Authorization") String authorization,
-			@PathVariable String postId, @RequestParam ("page") int page, Principal principal) throws Throwable {
-		return messagingService.makePostHidden(principal.getName(), postId, page);
+	public List<PostDto> makePostHidden(@PathVariable String postId, @RequestParam ("page") int page) throws Throwable {
+		String authorId = requestContext.getHeader("authorId");
+		return messagingService.makePostHidden(authorId, postId, page);
 	}
 
 	@PostMapping("/post/unfollow/{postId}")
-	public List<PostDto> unfollowPostsByUser(@RequestHeader(value = "Authorization") String authorization,
-			@PathVariable String postId, Principal principal) throws Throwable {
-		return messagingService.unfollowPostsByUser(principal.getName(), postId);
+	public List<PostDto> unfollowPostsByUser(@PathVariable String postId) throws Throwable {
+		String authorId = requestContext.getHeader("authorId");
+		return messagingService.unfollowPostsByUser(authorId, postId);
 	}
 
 	@GetMapping("/post/favorites")
-	public List<PostDto> getAllFavoritePostsByUser(@RequestHeader(value = "Authorization") String authorization,
-			Principal principal, @RequestParam ("page") int page) {
-		return messagingService.getAllFavoritePostsByUser(principal.getName(), page);
+	public List<PostDto> getAllFavoritePostsByUser(@RequestParam ("page") int page) {
+		String authorId = requestContext.getHeader("authorId");
+		return messagingService.getAllFavoritePostsByUser(authorId, page);
 	}
 
 	@GetMapping("/post/feed")
-	public List<PostDto> getUserPostFeed(@RequestHeader(value = "Authorization") String authorization, @RequestParam ("page") int page,
-			Principal principal) {
-		return messagingService.getUserPostFeed(principal.getName(), page);
+	public List<PostDto> getUserPostFeed(@RequestParam ("page") int page) {
+		String authorId = requestContext.getHeader("authorId");
+		return messagingService.getUserPostFeed(authorId, page);
 	}
 	
 	// for front: this request is working with "remove user" in Accounting service:

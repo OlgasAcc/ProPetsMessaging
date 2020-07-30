@@ -10,10 +10,8 @@ import lombok.NoArgsConstructor;
 @Getter
 public class BeanConfiguration {
 	private int quantity;
-	private String baseJWTUrl;
 
-	public BeanConfiguration(int quantity, String baseJWTUrl) {
+	public BeanConfiguration(int quantity) {
 		this.quantity = quantity;
-		this.baseJWTUrl = baseJWTUrl;
 	}
 }
