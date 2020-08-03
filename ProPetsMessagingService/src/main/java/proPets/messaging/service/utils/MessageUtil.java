@@ -56,6 +56,9 @@ public class MessageUtil implements Serializable {
 				.collect(Collectors.toList());
 	}
 	
+	
+	
+	
 //	public PagedListHolder<PostDto> createPageListHolder(String currentUserId, int pageNumber, int quantity) {	
 //		List<PostDto> list = getUpdatedFilteredPostFeed(currentUserId);
 //		PagedListHolder<PostDto> pagedListHolder = new PagedListHolder<>(list);
