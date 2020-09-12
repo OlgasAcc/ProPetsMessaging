@@ -23,6 +23,7 @@ import lombok.Setter;
 @Setter
 @EqualsAndHashCode(of = { "id" })
 @Builder
+
 @Document(collection = "all_posts")
 
 public class Post {

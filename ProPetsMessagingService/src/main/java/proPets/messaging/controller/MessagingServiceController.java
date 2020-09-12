@@ -34,19 +34,19 @@ public class MessagingServiceController {
 
 	@Autowired
 	MessagingService messagingService;
-	
+
 	@Autowired
 	MessagingConfiguration messagingConfiguration;
-	
+
 	@Autowired
 	private HttpServletRequest requestContext;
 
 	@RefreshScope
 	@GetMapping("/config")
-	public  BeanConfiguration getRefreshedData() {
+	public BeanConfiguration getRefreshedData() {
 		return new BeanConfiguration(messagingConfiguration.getQuantity());
 	}
-	
+
 	@PostMapping("/post")
 	public List<PostDto> addPost(@RequestBody NewPostDto newPostDto) throws Exception {
 		String authorId = requestContext.getHeader("authorId");
@@ -73,7 +73,7 @@ public class MessagingServiceController {
 	}
 
 	@PostMapping("/post/hidden/{postId}")
-	public List<PostDto> makePostHidden(@PathVariable String postId, @RequestParam ("page") int page) throws Throwable {
+	public List<PostDto> makePostHidden(@PathVariable String postId, @RequestParam("page") int page) throws Throwable {
 		String authorId = requestContext.getHeader("authorId");
 		return messagingService.makePostHidden(authorId, postId, page);
 	}
@@ -85,21 +85,21 @@ public class MessagingServiceController {
 	}
 
 	@GetMapping("/post/favorites")
-	public List<PostDto> getAllFavoritePostsByUser(@RequestParam ("page") int page) {
+	public List<PostDto> getAllFavoritePostsByUser(@RequestParam("page") int page) {
 		String authorId = requestContext.getHeader("authorId");
 		return messagingService.getAllFavoritePostsByUser(authorId, page);
 	}
 
 	@GetMapping("/post/feed")
-	public List<PostDto> getUserPostFeed(@RequestParam ("page") int page) {
+	public List<PostDto> getUserPostFeed(@RequestParam("page") int page) {
 		String authorId = requestContext.getHeader("authorId");
 		return messagingService.getUserPostFeed(authorId, page);
 	}
-	
+
 	// for front: this request is working with "remove user" in Accounting service:
 	// it is cleaning the "tail of removed user" AFTER removing the user from
 	// account db
-	
+
 	@DeleteMapping("/post/cleaner")
 	public ResponseEntity<String> cleanPostsAndPresenceOfRemovedUser(@RequestBody UserRemoveDto userRemoveDto) {
 		return ResponseEntity.ok(messagingService.cleanPostsAndPresenceOfRemovedUser(userRemoveDto));

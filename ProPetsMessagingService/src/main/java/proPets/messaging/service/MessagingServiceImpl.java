@@ -1,5 +1,6 @@
 package proPets.messaging.service;
 
+import org.springframework.data.domain.Pageable;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.zip.DataFormatException;
@@ -7,6 +8,7 @@ import java.util.zip.DataFormatException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Order;
 import org.springframework.expression.AccessException;
 import org.springframework.stereotype.Service;
 
@@ -48,7 +50,7 @@ public class MessagingServiceImpl implements MessagingService {
 		}
 		messagingRepository.save(newPost);
 		int quantity = messagingConfiguration.getQuantity();
-		PageRequest pageReq = PageRequest.of(0, quantity, Sort.Direction.DESC, "dateOfPublish");
+		Pageable pageReq = PageRequest.of(0, quantity, Sort.Direction.DESC, "dateOfPublish");
 		return messageUtil.getListAndConvertToListOfPostDto(currentUserId, pageReq);
 	}
 
@@ -59,7 +61,7 @@ public class MessagingServiceImpl implements MessagingService {
 			if (currentUserId.equalsIgnoreCase(post.getAuthorData().getAuthorId())) {
 				messagingRepository.delete(post);
 				int quantity = messagingConfiguration.getQuantity();
-				PageRequest pageReq = PageRequest.of(0, quantity, Sort.Direction.DESC, "dateOfPublish");
+				Pageable pageReq = PageRequest.of(0, quantity, Sort.Direction.DESC, "dateOfPublish");
 				return messageUtil.getListAndConvertToListOfPostDto(currentUserId, pageReq);
 			} else
 				throw new AccessException("Access denied: you'r not author!");
@@ -83,7 +85,7 @@ public class MessagingServiceImpl implements MessagingService {
 				messagingRepository.save(post);
 
 				int quantity = messagingConfiguration.getQuantity();
-				PageRequest pageReq = PageRequest.of(0, quantity, Sort.Direction.DESC, "dateOfPublish");
+				Pageable pageReq = PageRequest.of(0, quantity, Sort.by(Order.desc("dateOfPublish")));
 				return messageUtil.getListAndConvertToListOfPostDto(currentUserId, pageReq);
 			} else
 				throw new AccessException("Access denied: you'r not author!");
@@ -116,7 +118,7 @@ public class MessagingServiceImpl implements MessagingService {
 				post.addToUsersThatHidThisPost(currentUserId);
 				messagingRepository.save(post);
 				int quantity = messagingConfiguration.getQuantity();
-				PageRequest pageReq = PageRequest.of(page, quantity, Sort.Direction.DESC, "dateOfPublish");
+				Pageable pageReq = PageRequest.of(page, quantity, Sort.Direction.DESC, "dateOfPublish");
 				return messageUtil.getListAndConvertToListOfPostDto(currentUserId, pageReq);
 			} else
 				throw new AccessException("This is your post");
@@ -133,7 +135,7 @@ public class MessagingServiceImpl implements MessagingService {
 						.forEach(i -> messagingRepository.save(i));
 
 				int quantity = messagingConfiguration.getQuantity();
-				PageRequest pageReq = PageRequest.of(0, quantity, Sort.Direction.DESC, "dateOfPublish");
+				Pageable pageReq = PageRequest.of(0, quantity, Sort.Direction.DESC, "dateOfPublish");
 				return messageUtil.getListAndConvertToListOfPostDto(currentUserId, pageReq);
 			} else
 				throw new AccessException("Access denied: you'r author!");
@@ -146,7 +148,7 @@ public class MessagingServiceImpl implements MessagingService {
 																				// аккаунтинга, или 0 в результате
 																			// хватит?
 		int quantity = messagingConfiguration.getQuantity();
-		PageRequest pageReq = PageRequest.of(page, quantity, Sort.Direction.DESC, "dateOfPublish");
+		Pageable pageReq = PageRequest.of(page, quantity, Sort.Direction.DESC, "dateOfPublish");
 		return messageUtil.getFavsListAndConvertToListOfPostDto(currentUserId, pageReq);
 	}
 	
@@ -173,7 +175,7 @@ public class MessagingServiceImpl implements MessagingService {
 	@Override
 	public List<PostDto> getUserPostFeed(String currentUserId, int page) {
 		int quantity = messagingConfiguration.getQuantity();
-		PageRequest pageReq = PageRequest.of(page, quantity, Sort.Direction.DESC, "dateOfPublish");
+		Pageable pageReq = PageRequest.of(page, quantity, Sort.Direction.DESC, "dateOfPublish");
 		return messageUtil.getListAndConvertToListOfPostDto(currentUserId, pageReq);
 	}
 }
